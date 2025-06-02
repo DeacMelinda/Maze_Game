@@ -6,12 +6,12 @@ public class PlayerManager : MonoBehaviour
     PlayerLocomotion playerLocomotion;
     Animator animator;
     AudioSource audioSource;
-
+    MoveToCoinAgent moveToCoinAgent;
     [SerializeField]
-    TMPro.TextMeshProUGUI textMeshPro;
-
+    private GameObject coin;
 
     public int coins = 0;
+    private float distanceToCoin;
 
     private void Awake()
     {
@@ -19,11 +19,9 @@ public class PlayerManager : MonoBehaviour
         playerLocomotion = GetComponent<PlayerLocomotion>();
         animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
-    }
+        moveToCoinAgent = GetComponent<MoveToCoinAgent>();
 
-    private void Start()
-    {
-        textMeshPro.text = "Coins = " + coins;
+        distanceToCoin = Vector3.Distance(coin.transform.position, moveToCoinAgent.transform.position);
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -31,10 +29,28 @@ public class PlayerManager : MonoBehaviour
         if(collision.gameObject.CompareTag("Coin"))
         {
             coins++;
+            moveToCoinAgent.SetReward(10f);
+            moveToCoinAgent.EndEpisode();
             audioSource.Play();
-            Destroy(collision.gameObject);
-            textMeshPro.text = "Coins = " + coins;
         }
+        if(collision.gameObject.CompareTag("Wall"))
+        {
+            moveToCoinAgent.AddReward(-1f);
+        }
+    }
+
+    private void UpdateRewards()
+    {
+        var newDistance = Vector3.Distance(coin.transform.position, moveToCoinAgent.transform.position);
+        if (newDistance >= distanceToCoin)
+        {
+            moveToCoinAgent.AddReward(-1);
+        }
+        else
+        {
+            moveToCoinAgent.AddReward(1);
+        }
+        distanceToCoin = newDistance;
     }
 
     private void Update()
@@ -46,6 +62,7 @@ public class PlayerManager : MonoBehaviour
             animator.SetBool("IsJumping", true);
         }
 
+        UpdateRewards();
     }
 
     public void JumpAnimationOver()

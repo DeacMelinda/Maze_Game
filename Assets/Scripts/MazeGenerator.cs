@@ -20,19 +20,13 @@ public class MazeGenerator : MonoBehaviour
     [SerializeField]
     private GameObject _coinPrefab;
     [SerializeField]
-    private Camera _upCamera;
-    [SerializeField]
-    private Camera _characterCamera;
-    
-    public int _numberOfCoins = 50;
+    public int _numberOfCoins = 1;
 
     private int visited_cells = 0;
     
 
     IEnumerator Start()
     {
-        _upCamera.enabled = true;
-        _characterCamera.enabled = false;
         _mazeGrid = new MazeCell[_mazeWidth, _mazeDepth];
 
         for (int i = 0; i < _mazeWidth; i++)
@@ -62,48 +56,12 @@ public class MazeGenerator : MonoBehaviour
             }
         }
 
-        for (int i = 0; i < _mazeWidth; i++)
-        {
-            for (int j = 0; j < _mazeDepth; j++)
-            {
-                int coinChance = UnityEngine.Random.Range(0, 100);
-                if(coinChance < 60 && !_mazeGrid[i,j].HasObject())
-                {
-                    _mazeGrid[i, j].PlaceCoin(_coinPrefab);
-                    _numberOfCoins++;
-                }
-            }
-        }
+        var i_c = Random.Range(1, _mazeWidth);
+        var j_c = Random.Range(1, _mazeDepth);
 
-        yield return new WaitForSeconds(1.0f);
+        _mazeGrid[i_c, j_c].PlaceCoin(_coinPrefab);
 
-        yield return SmoothCameraTransition(2.0f);
         yield return null;
-    }
-
-    private IEnumerator SmoothCameraTransition(float duration)
-    {
-        float elapsed = 0f;
-
-        Vector3 initialPosition = _upCamera.transform.position;
-        Quaternion initialRotation = _upCamera.transform.rotation;
-
-        Vector3 targetPosition = _characterCamera.transform.position;
-        Quaternion targetRotation = _characterCamera.transform.rotation;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / duration);
-
-            _upCamera.transform.position = Vector3.Lerp(initialPosition, targetPosition, t);
-            _upCamera.transform.rotation = Quaternion.Slerp(initialRotation, targetRotation, t);
-
-            yield return null;
-        }
-
-        _upCamera.enabled = false;
-        _characterCamera.enabled = true;
     }
 
     private IEnumerator GenerateMaze(MazeCell prevCell, MazeCell currCell)
