@@ -1,2 +1,2 @@
 # Maze_Game
-First attempt at a game in Unity. 
+Trying to use an ML Agent from unity to make it learn how to play my game (a simplified version of the game)
